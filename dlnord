@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "checking for openVPN"
+
+mkdir nord
+cd nord
+sudo wget https://nordvpn.com/api/files/zip
+echo "Unzipping..."
+sleep 1
+unzip zip
+echo "Adding auto authentication to all configs (may take a few minutes...)"
+find -name "*.ovpn" | sudo xargs sed -i '/auth-user-pass/ s/$/ \/etc\/openvpn\/auth.txt/'
+touch auth.txt
+echo "please provide nordVPN username(email) and Password"
+read -p 'Username: ' username
+read -sp 'Password: ' password
+echo "creating auth.txt"
+sleep 1
+echo "$username" > auth.txt
+echo "$password" >> auth.txt
+echo "copying configuration files to openVPN"
+sleep 1
+sudo mkdir /etc/openvpn/testing
+#find . -type f -maxdepth 1 -iname '*s02*' -exec mv {} /etc/openvpn/testing/ \;
+find -name "*" | sudo xargs mv -t /etc/openvpn/testing/
+cd ..
+#sudo cp vpn /usr/local/bin/
+#sudo cp cronvpn /usr/local/bin
+#sudo cp proxy /usr/local/bin
+
+
+

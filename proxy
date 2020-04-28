@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ipdata=$(curl -s https://ipinfo.io/ | sed -e '/readme/d' -e 's/"//g' -e 's/,//g' -e '1d' -e '$d')
+
+echo "Connection Information"
+echo "$ipdata"
+

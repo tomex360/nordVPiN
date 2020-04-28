@@ -1,0 +1,41 @@
+#!/bin/bash
+
+ccode=$1
+default="us"
+
+cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
+
+echo "specified is: $cserver"
+
+defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
+
+echo "default is: $defaultserver"
+
+
+#if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+# 	echo "IPv4 is up"
+#else
+	
+#	echo "IPv4 is down"
+killall 'openvpn'
+
+if [ -z "$ccode" ]
+
+then
+	echo "no country given, using default:$default"
+	echo "openvpn $defaultserver"
+	echo "openvpn $cserver"
+	sudo openvpn --config "$defaultserver" --daemon
+else
+      	echo "connecting to random $ccode server"
+	echo "openvpn $cserver"
+	sudo openvpn --config "$cserver" --daemon
+fi
+sleep 5
+proxy
+
+#run the below line to insert authentication from file auth.txt, so that credential validation is not required by this script
+
+#sudo find -name "*.ovpn" | sudo xargs sed -i '/auth-user-pass/ s/$/ \/etc\/openvpn\/auth.txt/'
+
+

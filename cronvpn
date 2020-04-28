@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#tests for working internet connection, if not working, kills openvpn and reconnects to the country specified as default
+
+default="us"
+
+defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
+
+
+
+if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+ 	echo "IPv4 is up"
+	echo "do nothing..exit"
+	exit
+else
+	echo "IPv4 is down"
+	killall 'openvpn'
+	sudo openvpn --config "$defaultserver" --daemon
+	sleep 5
+	cinfo=$proxy
+	echo "$cinfo"
+	count=$(head -n 1 /usr/local/bin/vpnlog.txt)
+	count=$((count+1))
+	sed -i "1s/.*/$count/" /usr/local/bin/vpnlog.txt
+	$date >> vpnlog.txt
+
+fi
