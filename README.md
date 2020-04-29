@@ -5,15 +5,15 @@ nordVPiN is a collection of scripts to setup, manage and monitor VPN connections
 
 **Heavily customised installations may run into issues. User "pi" must be present**
 
-Installation nstructions:
+### Installation instructions:
+'''
+cd /home/pi
+git clone https://github.com/tomex360/nordVPiN
+cd nordVPiN
+sudo ./dlnord
+'''
 
-> cd /home/pi
-> git clone https://github.com/tomex360/nordVPiN
-> cd nordVPiN
-> sudo ./dlnord
-
-
-###dlnord###
+### dlnord
 Will setup and install. performs the following actions:
 - check for installation of openVPN and install if required
 - create ~/.config/nordVPiN, location for 2 config files mentioned below
@@ -27,11 +27,11 @@ Will setup and install. performs the following actions:
 - add a cron job to run accompanying script 'cronvpn' at 5 min intervals
 
 
-###vpn###
+### vpn
 without args will disconnect and reconnect to a random server from default country (USA). vpn countrycode (eg. vpn uk) to connect to a random server from that country 
 
-###cronvpn###
+### cronvpn
 runs as a cronjob, checking for connectivity. If no connectivity, will disconnect and reconnect to a random server from default country (USA)
 
-###proxy###
+### proxy
 will display current IP information, geolocation etc, usefull for monitoring/troubleshooting
