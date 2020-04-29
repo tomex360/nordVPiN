@@ -3,6 +3,8 @@
 
 nordVPiN is a collection of scripts to setup, manage and monitor VPN connections, specifically for NordVPN on the Raspberry Pi (Raspbian Buster).
 
+**Heavily customised installations may run into issues. User "pi" must be present**
+
 dlnord - Run this first, and only once, as root. It will perform the following:
 - check for installation of openVPN and install if required
 - create ~/.config/nordVPiN, location for 2 config files mentioned below

@@ -56,19 +56,19 @@ cp vpn /usr/local/bin/
 cp cronvpn /usr/local/bin
 cp proxy /usr/local/bin
 
-
 echo "Enabling persistence"
 sleep 1
-sed -i '15s/.*/AUTOSTART="current"/' /etc/default/openvpn
-#sudo sed -i "/^exit 0/i sudo openvpn --config \$(< /home/pi/.config/nordVPiN/default.conf) --daemon" /etc/rc.local
 
-if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+if cat /etc/default/openvpn | grep 'AUTOSTART="current"' >/dev/null; then
+	echo "Autostart is already configured"
+else
+	sed -i '15s/.*/AUTOSTART="current"/' /etc/default/openvpn
+fi
 
-if crontab -l | grep cronvpn >/dev/null; then
+if crontab -u pi -l | grep 'cronvpn' >/dev/null; then
 	echo "crontab entry already exists for 'cronvpn'"
 
 else
-
 	echo "Enabling connection monitoring and auto reconnect"
 	sleep 1
 	#write out current crontab
