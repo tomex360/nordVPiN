@@ -1,9 +1,35 @@
 #!/bin/bash
 
+
+if [[ $EUID -ne 0 ]]; then
+   echo "Please run as root" 
+   exit 1
+fi
+
+
 echo "checking for openVPN"
 
+if dpkg -l | grep openvpn >/dev/null; then
+	echo "OpenVPN is installed"
+	sleep 1
+
+else
+	echo "OpenVPN not found. Installing..."	
+	sleep 1
+	sudo apt update
+	sudo apt install openvpn
+	echo "OpenVPN installation complete"
+	sleep 1
+fi
+
+echo "Setting up dirs.."
+mkdir /home/pi/.config/nordVPiN/
+touch /home/pi/.config/nordVPiN/log.txt
+echo "0" > /home/pi/.config/nordVPiN/log.txt
 mkdir nord
 cd nord
+echo "Downloading openVPN server configurations from nordVPN..."
+sleep 1
 sudo wget https://nordvpn.com/api/files/zip
 echo "Unzipping..."
 sleep 1
@@ -20,13 +46,32 @@ echo "$username" > auth.txt
 echo "$password" >> auth.txt
 echo "copying configuration files to openVPN"
 sleep 1
-sudo mkdir /etc/openvpn/testing
-#find . -type f -maxdepth 1 -iname '*s02*' -exec mv {} /etc/openvpn/testing/ \;
-find -name "*" | sudo xargs mv -t /etc/openvpn/testing/
+find -name "*" | sudo xargs mv -t /etc/openvpn/
 cd ..
-#sudo cp vpn /usr/local/bin/
-#sudo cp cronvpn /usr/local/bin
-#sudo cp proxy /usr/local/bin
+rm -r nord
 
+echo "Installing scripts..."
+sleep 1
+sudo cp vpn /usr/local/bin/
+sudo cp cronvpn /usr/local/bin
+sudo cp proxy /usr/local/bin
+
+
+echo "Enabling persistence"
+sleep 1
+sudo sed -i "/^exit 0/i sudo openvpn --config \$(< /home/pi/.config/nordVPiN/default.conf) --daemon" /etc/rc.local
+
+echo "Enabling connection monitoring and auto reconnect"
+sleep 1
+#write out current crontab
+touch tempcron
+crontab -u pi -l > tempcron
+#echo new cron into cron file
+echo "*/5 * * * * sudo /usr/local/bin/cronvpn > /dev/null" >> tempcron
+#install new cron file
+crontab -u pi tempcron
+rm tempcron
+
+/usr/local/bin/vpn us
 
 

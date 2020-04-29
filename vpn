@@ -5,11 +5,11 @@ default="us"
 
 cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
 
-echo "specified is: $cserver"
+#echo "specified is: $cserver"
 
 defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
 
-echo "default is: $defaultserver"
+#echo "default is: $defaultserver"
 
 
 #if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
@@ -23,13 +23,19 @@ if [ -z "$ccode" ]
 
 then
 	echo "no country given, using default:$default"
-	echo "openvpn $defaultserver"
-	echo "openvpn $cserver"
+	echo "Connecting to: $defaultserver"
+	sleep 1
 	sudo openvpn --config "$defaultserver" --daemon
+	touch /home/pi/.config/nordVPiN/default.conf
+	echo "$defaultserver" > /home/pi/.config/nordVPiN/default.conf
+
+
 else
-      	echo "connecting to random $ccode server"
-	echo "openvpn $cserver"
+      	echo "Connecting to random $ccode server"
+	echo "Connecting to: $cserver"
 	sudo openvpn --config "$cserver" --daemon
+	touch /home/pi/.config/nordVPiN/default.conf
+	echo "$cserver" > /home/pi/.config/nordVPiN/default.conf
 fi
 sleep 5
 proxy

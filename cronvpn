@@ -19,9 +19,9 @@ else
 	sleep 5
 	cinfo=$proxy
 	echo "$cinfo"
-	count=$(head -n 1 /usr/local/bin/vpnlog.txt)
+	count=$(head -n 1 /home/pi/.config/nordVPiN/log.txt)
 	count=$((count+1))
-	sed -i "1s/.*/$count/" /usr/local/bin/vpnlog.txt
-	$date >> vpnlog.txt
+	sed -i "1s/.*/$count/" /home/pi/.config/nordVPiN/log.txt
+	$date >> /home/pi/.config/nordVPiN/log.txt
 
 fi
