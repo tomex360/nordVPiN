@@ -6,12 +6,12 @@ nordVPiN is a collection of scripts to setup, manage and monitor VPN connections
 **Heavily customised installations may run into issues. User "pi" must be present**
 
 ### Installation instructions:
-'''
+```
 cd /home/pi
 git clone https://github.com/tomex360/nordVPiN
 cd nordVPiN
 sudo ./dlnord
-'''
+```
 
 ### dlnord
 Will setup and install. performs the following actions:
