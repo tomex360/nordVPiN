@@ -1,10 +1,7 @@
 # nordVPiN
  scripts for NordVPN on the Pi
 
-**Work in progess - Do not use
-**WARNING** if you run the installer script (dlnord) more than once, you may end up with duplicate entries in crontab and /etc/rc.local. Duplicates should be removed manually in this case.
-
-nordVPiN is a collection of scripts to setup, manage and monitor VPN connections, specifically for NordVPN on the Raspberry Pi (Raspbian)
+nordVPiN is a collection of scripts to setup, manage and monitor VPN connections, specifically for NordVPN on the Raspberry Pi (Raspbian Buster).
 
 dlnord - Run this first, and only once, as root. It will perform the following:
 - check for installation of openVPN and install if required
@@ -15,11 +12,9 @@ dlnord - Run this first, and only once, as root. It will perform the following:
 - create a file with user provided credentials (**Warning** this is stored in plain text)
 - move modified server confs and auth file to /etc/openvpn/
 - install scripts 'vpn', 'proxy' and 'cronvpn' to /usr/local/bin/
-- add line to /etc/rc.local to run 'openvpn -- config (path of last used server saved in file .conf/nordVPiN/default.conf)'
+- add line 'AUTOSTART="current"' to /etc/default/openvpn, which will alllow systemd to start the openvpn daemon with last used config file on reboots etc. current.conf is resaved everytime  a connection is made via the accompanying 'vpn' script
 - add a cron job to run accompanying script 'cronvpn' at 5 min intervals
-- run accompanying script 'vpn' 
 
- download openvpn configs, setup auto authentication and install,
 
 vpn - without args will disconnect and reconnect to a random server from default country (USA). vpn countrycode (eg. vpn uk) to connect to a random server from that country 
 

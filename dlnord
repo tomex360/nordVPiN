@@ -46,32 +46,41 @@ echo "$username" > auth.txt
 echo "$password" >> auth.txt
 echo "copying configuration files to openVPN"
 sleep 1
-find -name "*" | sudo xargs mv -t /etc/openvpn/
+find -name ".*" | sudo xargs mv -t /etc/openvpn/
 cd ..
 rm -r nord
 
 echo "Installing scripts..."
 sleep 1
-sudo cp vpn /usr/local/bin/
-sudo cp cronvpn /usr/local/bin
-sudo cp proxy /usr/local/bin
+cp vpn /usr/local/bin/
+cp cronvpn /usr/local/bin
+cp proxy /usr/local/bin
 
 
 echo "Enabling persistence"
 sleep 1
-sudo sed -i "/^exit 0/i sudo openvpn --config \$(< /home/pi/.config/nordVPiN/default.conf) --daemon" /etc/rc.local
+sed -i '15s/.*/AUTOSTART="current"/' /etc/default/openvpn
+#sudo sed -i "/^exit 0/i sudo openvpn --config \$(< /home/pi/.config/nordVPiN/default.conf) --daemon" /etc/rc.local
 
-echo "Enabling connection monitoring and auto reconnect"
-sleep 1
-#write out current crontab
-touch tempcron
-crontab -u pi -l > tempcron
-#echo new cron into cron file
-echo "*/5 * * * * sudo /usr/local/bin/cronvpn > /dev/null" >> tempcron
-#install new cron file
-crontab -u pi tempcron
-rm tempcron
+if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
 
-/usr/local/bin/vpn us
+if crontab -l | grep cronvpn >/dev/null; then
+	echo "crontab entry already exists for 'cronvpn'"
 
+else
 
+	echo "Enabling connection monitoring and auto reconnect"
+	sleep 1
+	#write out current crontab
+	touch tempcron
+	crontab -u pi -l > tempcron
+	#echo new cron into cron file
+	echo "*/5 * * * * sudo /usr/local/bin/cronvpn > /dev/null" >> tempcron
+	#install new cron file
+	crontab -u pi tempcron
+	rm tempcron
+fi
+
+echo "Setup complete!"
+echo "run 'sudo vpn' to connect or 'sudo vpn xx' to select country"
+echo "eg 'sudo vpn uk' to connect to a United Kingdom server"

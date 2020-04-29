@@ -28,7 +28,7 @@ then
 	sudo openvpn --config "$defaultserver" --daemon
 	touch /home/pi/.config/nordVPiN/default.conf
 	echo "$defaultserver" > /home/pi/.config/nordVPiN/default.conf
-
+	cp $defaultserver /etc/openvpn/current.conf
 
 else
       	echo "Connecting to random $ccode server"
@@ -36,6 +36,7 @@ else
 	sudo openvpn --config "$cserver" --daemon
 	touch /home/pi/.config/nordVPiN/default.conf
 	echo "$cserver" > /home/pi/.config/nordVPiN/default.conf
+	cp $cserver /etc/openvpn/current.conf
 fi
 sleep 5
 proxy
