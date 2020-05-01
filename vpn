@@ -5,6 +5,24 @@ if [[ $EUID -ne 0 ]]; then
 	exit 1	
 fi
 
+case $1 in
+	pref)
+		if [[ $(ls -A /etc/openvpn/$2*.ovpn | head -c1 | wc -c) -ne 0 ]];then
+			##pref is valid
+			echo "$2" > /home/pi/.config/nordVPiN/pref.txt
+			echo "Prefered connection location updated to $2"
+		else
+			##pref is invalid
+			echo "$2 is not a valid country code"
+        		echo "Valid codes are: "
+			ls /etc/openvpn/*.ovpn | sed -e 's!.*/!!' -e 's/.//3g' | uniq | column
+			echo "Failed to update prefered connection location"
+ 			exit 1		
+		fi
+		##update pref with $2
+	;;
+	*)
+
 ccode=$1
 default=$(cat "/home/pi/.config/nordVPiN/pref.txt")
 #cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
@@ -19,7 +37,7 @@ then
 			##pref is valid
 			defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
 			killall 'openvpn'
-			echo "Connecting to random $default server"
+			echo "No country given, using prefered: $default"
 			echo "Connecting to: $defaultserver"
 			sudo openvpn --config "$defaultserver" --daemon
 			cp $defaultserver /etc/openvpn/current.conf
@@ -55,8 +73,8 @@ else
 		fi
 fi
 
-sleep 5
-count=0
+sleep 3
+count=1
 
 status=$(curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data | sed -n -e 's/^.*status\"://p' | sed 's/.$//')
 
@@ -66,20 +84,23 @@ if [ $status == "true" ]; then
 	proxy
 	exit 0
 else
-	while [ $status != "true" ]; do
+	until [ $status = "true" ]
+       	do
 		#repeat this while connection is not esablished
 		echo "Checking VPN connection.."
-		sleep 1
+		sleep 3 
 		status=$(curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data | sed -n -e 's/^.*status\"://p' | sed 's/.$//')
-		count=$((count+1))
-		if [ $count > 5 ];then
+		if (( $count > 5 )); then
 			echo "Connection failed"
 			exit 1
 		else
 			#keep trying
-			echo "Checking VPN connection.."
+			let "count=count+1"
 		fi
 	done
+	echo "Connected!"
 fi
 
 proxy
+;;
+esac
