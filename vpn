@@ -1,39 +1,85 @@
 #!/bin/bash
 
-if [[$EUID -ne 0 ]];
+if [[ $EUID -ne 0 ]]; then
 	echo "Please run as root"
 	exit 1	
 fi
 
-
 ccode=$1
-default="us"
+default=$(cat "/home/pi/.config/nordVPiN/pref.txt")
+#cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
+#defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
 
-cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
-
-defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
-	
-killall 'openvpn'
 
 if [ -z "$ccode" ]
 
 then
-	echo "no country given, using default:$default"
-	echo "Connecting to: $defaultserver"
-	sleep 1
-	sudo openvpn --config "$defaultserver" --daemon
-	touch /home/pi/.config/nordVPiN/default.conf
-	echo "$defaultserver" > /home/pi/.config/nordVPiN/default.conf
-	cp $defaultserver /etc/openvpn/current.conf
+	if [[ $(ls -A /etc/openvpn/$default*.ovpn | head -c1 | wc -c) -ne 0 ]]
+		then
+			##pref is valid
+			defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
+			killall 'openvpn'
+			echo "Connecting to random $default server"
+			echo "Connecting to: $defaultserver"
+			sudo openvpn --config "$defaultserver" --daemon
+			cp $defaultserver /etc/openvpn/current.conf
+
+		else
+			##pref is invalid
+			echo "Prefered connection "$default" not valid"
+        		echo "Valid codes are: "
+			ls /etc/openvpn/*.ovpn | sed -e 's!.*/!!' -e 's/.//3g' | uniq | column
+
+			echo "run 'vpn pref' to update prefered connection"
+ 			exit 1		
+		fi
 
 else
-      	echo "Connecting to random $ccode server"
-	echo "Connecting to: $cserver"
-	sudo openvpn --config "$cserver" --daemon
-	touch /home/pi/.config/nordVPiN/default.conf
-	echo "$cserver" > /home/pi/.config/nordVPiN/default.conf
-	cp $cserver /etc/openvpn/current.conf
-fi
-sleep 5
-proxy
+	if [[ $(ls -A /etc/openvpn/$ccode*.ovpn | head -c1 | wc -c) -ne 0 ]]
+		then
+			##user input is valid
+			cserver=$(ls /etc/openvpn/$1* | shuf -n 1)
+			killall 'openvpn'
+			echo "Connecting to random $ccode server"
+			echo "Connecting to: $cserver"
+			sudo openvpn --config "$cserver" --daemon
+			cp $cserver /etc/openvpn/current.conf
 
+		else
+			##user input is invalid
+			echo "$ccode not valid"
+        		echo "Valid codes are: "
+			ls /etc/openvpn/*.ovpn | sed -e 's!.*/!!' -e 's/.//3g' | uniq | column
+
+			exit 1		
+		fi
+fi
+
+sleep 5
+count=0
+
+status=$(curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data | sed -n -e 's/^.*status\"://p' | sed 's/.$//')
+
+#echo "$status"
+if [ $status == "true" ]; then
+	echo "Connected!"
+	proxy
+	exit 0
+else
+	while [ $status != "true" ]; do
+		#repeat this while connection is not esablished
+		echo "Checking VPN connection.."
+		sleep 1
+		status=$(curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data | sed -n -e 's/^.*status\"://p' | sed 's/.$//')
+		count=$((count+1))
+		if [ $count > 5 ];then
+			echo "Connection failed"
+			exit 1
+		else
+			#keep trying
+			echo "Checking VPN connection.."
+		fi
+	done
+fi
+
+proxy

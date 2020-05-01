@@ -6,7 +6,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-
 echo "checking for openVPN"
 
 if dpkg -l | grep openvpn >/dev/null; then
@@ -17,7 +16,7 @@ else
 	echo "OpenVPN not found. Installing..."	
 	sleep 1
 	sudo apt update
-	sudo apt install openvpn
+	sudo apt install openvpn curl
 	echo "OpenVPN installation complete"
 	sleep 1
 fi
@@ -34,6 +33,39 @@ sudo wget https://nordvpn.com/api/files/zip
 echo "Unzipping..."
 sleep 1
 unzip zip
+
+
+pref="none"
+prefsetcorrectly="false"
+
+until [ $prefsetcorrectly = "true" ]
+do
+	clear
+	if [ $pref != "none" ]; then
+	 	echo "$pref not valid"
+        	echo "Valid codes are: "
+		ls *.ovpn | sed 's/.//3g' | uniq | column	       
+		read -p 'Please enter prefered connection location(us, uk, de, fr...): ' pref
+	
+	else
+		read -p 'Please enter prefered connection location(us, uk, de, fr...): ' pref
+	fi
+	
+	if [[ $(ls -A $pref*.ovpn | head -c1 | wc -c) -ne 0 ]]
+	then
+		##user input is a match
+		prefsetcorrectly="true"
+		echo "Your prefered connection location has been set to: $pref"
+		sleep 1
+	else
+		##user input invalid
+		prefsetcorrectly="false"
+	fi
+done
+
+touch /home/pi/.config/nordVPiN/pref.txt
+echo "$pref" > /home/pi/.config/nordVPiN/pref.txt
+
 echo "Adding auto authentication to all configs (may take a few minutes...)"
 find -name "*.ovpn" | sudo xargs sed -i '/auth-user-pass/ s/$/ \/etc\/openvpn\/auth.txt/'
 touch auth.txt
@@ -46,7 +78,7 @@ echo "$username" > auth.txt
 echo "$password" >> auth.txt
 echo "copying configuration files to openVPN"
 sleep 1
-find -name ".*" | sudo xargs mv -t /etc/openvpn/
+find -name "*" | sudo xargs mv -t /etc/openvpn/
 cd ..
 rm -r nord
 
@@ -82,5 +114,5 @@ else
 fi
 
 echo "Setup complete!"
-echo "run 'sudo vpn' to connect or 'sudo vpn xx' to select country"
+echo "run 'sudo vpn' to connect to a server from your prefered location, or 'sudo vpn xx' to select country"
 echo "eg 'sudo vpn uk' to connect to a United Kingdom server"

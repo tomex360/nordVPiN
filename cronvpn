@@ -2,14 +2,25 @@
 
 #tests for working internet connection, if not working, kills openvpn and reconnects to the country specified as default
 
-default="us"
+default=$(cat /home/pi/.config/nordVPiN/pref.txt)
 
 defaultserver=$(ls /etc/openvpn/$default* | shuf -n 1)
 
+status=$(curl https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data | sed -n -e 's/^.*status\"://p' | sed 's/.$//')
 
+echo "$status"
 
-if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
- 	echo "IPv4 is up"
+#Mode 1 
+#Comment the line below if you wish to use Mode 2
+if [  $status == "true" ]; then
+#/
+
+#Mode 2 
+#uncomment line below, and comment out Mode 1 if statement to run in mode 2 (see README.md)
+#if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+#/ 
+
+	echo "IPv4 is up"
 	echo "do nothing..exit"
 	exit
 else
